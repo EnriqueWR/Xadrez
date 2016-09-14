@@ -1,0 +1,352 @@
+#include <iostream>
+#include <windows.h>
+using namespace std;
+
+WORD GetConsoleTextAttribute (HANDLE hCon)
+{
+  CONSOLE_SCREEN_BUFFER_INFO con_info;
+  GetConsoleScreenBufferInfo(hCon, &con_info);
+  return con_info.wAttributes;
+}
+
+int main(){
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+  	const int saved_colors = GetConsoleTextAttribute(hConsole);
+
+	int ord=1;
+	char grade[8][8];
+	int grade2[8][8];
+	SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+	cout << "      Xadrez"<<endl;
+	SetConsoleTextAttribute(hConsole, saved_colors);
+	for (int i=0; i<8; i++){
+		cout <<ord<<" ";
+		ord++;
+        for (int j=0; j<8; j++){
+        	if (i>1&&i<6){
+        		grade[j][i]='.';
+        		grade2[j][i]='.';
+			}else if (i==6||i==1){
+				grade[j][i]=1;
+				grade2[j][i]=1;
+			}else if (j==0||j==7){
+				grade[j][i]='T';
+				grade2[j][i]='T';
+			}else if (j==1||j==6){
+				grade[j][i]='C';
+				grade2[j][i]='C';
+			}else if (j==2||j==5){
+				grade[j][i]='B';
+				grade2[j][i]='B';
+			}else if ((i==7||i==0)&&j==4){
+				grade[j][i]='Q';
+				grade2[j][i]='Q';
+			}else{
+				grade[j][i]='R';
+				grade2[j][i]='R';
+			}
+        	if (i>5){
+        		SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        		cout<<grade[j][i]<<" ";
+        		SetConsoleTextAttribute(hConsole, saved_colors);
+			}else{
+				cout<<grade[j][i]<<" ";
+			}
+            
+        }
+        cout << endl;
+        if (i==7){
+        	cout<< "  1 2 3 4 5 6 7 8"<<endl;
+		}
+    }
+    for (int i=0;i<2;i++){
+    	for (int j=0;j<8;j++){
+    		grade2[j][i+6]+=100;
+    		if (i==0){
+    			grade2[j][i+6]+=1;
+			}
+		}
+	}
+    
+    
+    int tempx,tempy,pa1[3];
+    char cpa1=1;
+    bool vpa1=true;
+    pa1[0]=0;
+    pa1[1]=6;
+    pa1[2]=1;
+    
+    
+    int x,y;
+    while(1!=0){
+    	ord=1;
+    	cin >> x >> y;
+    	//peão
+    	if (grade2[x-1][y-1]==101||grade2[x-1][y-1]==102){
+    		cin >>tempx>>tempy;
+    		if (tempx<1||tempx>8||tempy<1||tempy>8||grade2[tempx-1][tempy-1]>100){
+    			SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+				cout << "Movimento invalido!"<<endl;
+				SetConsoleTextAttribute(hConsole, saved_colors);
+			}else if (grade2[x-1][y-1]==102&&grade2[tempx-1][tempy-2]==46&&tempx==x&&(tempy==y-2||tempy==y-1)){
+    			grade[x-1][y-1]='.';
+    			grade[x-1][tempy-1]=1;
+    			grade2[x-1][tempy-1]=101;
+    			grade2[x-1][y-1]='.';
+			}else if (tempx==x&&tempy==y-1&&grade2[tempx-1][tempy-1]==46){
+				grade[x-1][y-1]='.';
+    			grade[x-1][tempy-1]=1;
+    			grade2[x-1][tempy-1]=101;
+    			grade2[x-1][y-1]='.';
+    		}else if ((tempx==x-1||tempx==x+1)&&tempy==y-1&&grade2[tempx-1][tempy-1]!=46&&grade2[tempx-1][tempy-1]<100){
+				grade[x-1][y-1]='.';
+    			grade[tempx-1][tempy-1]=1;
+    			grade2[tempx-1][tempy-1]=101;
+    			grade2[x-1][y-1]='.';
+			}else{
+				SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+				cout << "Movimento invalido!"<<endl;
+				SetConsoleTextAttribute(hConsole, saved_colors);
+			}
+		}
+		//torre
+    	if (grade2[x-1][y-1]==184){
+    		cin >>tempx>>tempy;
+    		if (tempx<1||tempx>8||tempy<1||tempy>8||grade2[tempx-1][tempy-1]>100){
+    			SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+				cout << "Movimento invalido!"<<endl;
+				SetConsoleTextAttribute(hConsole, saved_colors);
+			}else if (tempx==x&&tempy!=y){
+				if (tempy-y>0){
+					int i=0;
+					for (int hue=0; hue<tempy-y; hue++){
+						if (grade2[x-1][y+hue]!=46&&grade2[x-1][y+hue]<100){
+							i++;
+							break;
+						}else if(grade2[x-1][y+hue]!=46){
+							break;
+						}
+						i++;
+					}
+					if (i>0){
+						grade2[x-1][y+i-1]=184;
+						grade2[x-1][y-1]='.';
+						grade[x-1][y-1]='.';
+						grade[x-1][y+i-1]='T';
+					}else{
+						SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+						cout << "Movimento invalido!"<<endl;
+						SetConsoleTextAttribute(hConsole, saved_colors);
+					}
+				}else{
+					int i=0;
+					for (int h=0; h<y-tempy; h++){
+						if (grade2[x-1][y-2-h]!=46&&grade2[x-1][y-2-h]<100){
+							i++;
+							break;
+						}else if(grade2[x-1][y-2-h]!=46){
+							break;
+						}else{
+							i++;
+						}
+					}
+					if (i>0){
+						grade[x-1][y-1]='.';
+						grade[x-1][y-1-i]='T';
+						grade2[x-1][y-1-i]=184;
+						grade2[x-1][y-1]='.';
+					}else{
+						SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+						cout << "Movimento invalido!"<<endl;
+						SetConsoleTextAttribute(hConsole, saved_colors);
+					}
+				}
+			}else if (tempx!=x&&tempy==y){
+				if (tempx-x>0){
+					int i=0;
+					for (int hue=0; hue<tempx-x; hue++){
+						if (grade2[x+hue][y-1]!=46&&grade2[x+hue][y-1]<100){
+							i++;
+							break;
+						}else if(grade2[x+hue][y-1]!=46){
+							break;
+						}
+						i++;
+					}
+					if (i>0){
+						grade2[x+i-1][y-1]=184;
+						grade2[x-1][y-1]='.';
+						grade[x-1][y-1]='.';
+						grade[x+i-1][y-1]='T';
+					}else{
+						SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+						cout << "Movimento invalido!"<<endl;
+						SetConsoleTextAttribute(hConsole, saved_colors);
+					}
+				}else{
+					int i=0;
+					for (int h=0; h<x-tempx; h++){
+						if (grade2[x-2-h][y-1]!=46&&grade2[x-2-h][y-1]<100){
+							i++;
+							break;
+						}else if(grade2[x-2-h][y-1]!=46){
+							break;
+						}else{
+							i++;
+						}
+					}
+					if (i>0){
+						grade[x-1][y-1]='.';
+						grade[x-1-i][y-1]='T';
+						grade2[x-1-i][y-1]=184;
+						grade2[x-1][y-1]='.';
+					}else{
+						SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+						cout << "Movimento invalido!"<<endl;
+						SetConsoleTextAttribute(hConsole, saved_colors);
+					}
+				}
+			}else{
+				SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+				cout << "Movimento invalido!"<<endl;
+				SetConsoleTextAttribute(hConsole, saved_colors);
+			}
+		}
+    	//cavalo
+    	if (grade2[x-1][y-1]==167){
+    		cin >>tempx>>tempy;
+    		if (tempx<1||tempx>8||tempy<1||tempy>8||grade2[tempx-1][tempy-1]>100){
+    			SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+				cout << "Movimento invalido!"<<endl;
+				SetConsoleTextAttribute(hConsole, saved_colors);
+			}else if ((tempy-y==2&&tempx-x==1)||(tempy-y==-2&&tempx-x==-1)||(tempy-y==-2&&tempx-x==1)||(tempy-y==2&&tempx-x==-1)||(tempy-y==1&&tempx-x==2)||(tempy-y==-1&&tempx-x==-2)||(tempy-y==-1&&tempx-x==2)||(tempy-y==1&&tempx-x==-2)){
+				grade[x-1][y-1]='.';
+    			grade[tempx-1][tempy-1]=67;
+    			grade2[tempx-1][tempy-1]=167;
+    			grade2[x-1][y-1]='.';
+			}else{
+				SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+				cout << "Movimento invalido!"<<endl;
+				SetConsoleTextAttribute(hConsole, saved_colors);
+			}
+		}
+    	
+    	//bispo
+    	if (grade2[x-1][y-1]==166){
+    		cin >>tempx>>tempy;
+    		if (tempx<1||tempx>8||tempy<1||tempy>8||grade2[tempx-1][tempy-1]>100){
+    			SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+				cout << "Movimento invalido!"<<endl;
+				SetConsoleTextAttribute(hConsole, saved_colors);
+			}else if ((tempx-x==tempy-y)||(tempx-x==(-1)*(tempy-y))){
+				if (tempx-x>0){
+					if (tempy-y>0){
+						int count=0;
+						for (int i=0; i<tempx-x; i++){
+							if (grade2[x+i][y+i]!=46&&grade2[x+i][y+i]<100){
+								count++;
+								break;
+							}else if(grade2[x+1][y+i]!=46){
+								break;
+							}
+							count++;
+						}
+						if (count>0){
+							grade2[x+count-1][y+count-1]=166;
+							grade2[x-1][y-1]='.';
+							grade[x-1][y-1]='.';
+							grade[x+count-1][y+count-1]='B';
+						}else{
+							SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+							cout << "Movimento invalido!"<<endl;
+							SetConsoleTextAttribute(hConsole, saved_colors);
+						}
+					}else{
+						int count=0;
+						for (int i=0; i<tempx-x; i++){
+							if (grade2[x+i][y-2-i]!=46&&grade2[x+i][y-2-i]<100){
+								count++;
+								break;
+							}else if(grade2[x+1][y-2-i]!=46){
+								break;
+							}
+							count++;
+						}
+						if (count>0){
+							grade2[x+count-1][y-count-1]=166;
+							grade2[x-1][y-1]='.';
+							grade[x-1][y-1]='.';
+							grade[x+count-1][y-count-1]='B';
+						}else{
+							SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+							cout << "Movimento invalido!"<<endl;
+							SetConsoleTextAttribute(hConsole, saved_colors);
+						}
+					}
+				}else{
+					if (tempy-y>0){
+						int count=0;
+						for (int i=0; i<tempy-y; i++){
+							if (grade2[x-2-i][y+i]!=46&&grade2[x-2-i][y+i]<100){
+								count++;
+								break;
+							}else if(grade2[x-2-i][y+i]!=46){
+								break;
+							}
+							count++;
+						}
+						if (count>0){
+							grade2[x-count-1][y+count-1]=166;
+							grade2[x-1][y-1]='.';
+							grade[x-1][y-1]='.';
+							grade[x-count-1][y+count-1]='B';
+						}else{
+							SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+							cout << "Movimento invalido!"<<endl;
+							SetConsoleTextAttribute(hConsole, saved_colors);
+						}
+					}else{
+						int count=0;
+						for (int i=0; i<y-tempy; i++){
+							if (grade2[x-2-i][y-2-i]!=46&&grade2[x-2-i][y-2-i]<100){
+								count++;
+								break;
+							}else if(grade2[x-2-i][y-2-i]!=46){
+								break;
+							}
+							count++;
+						}
+						if (count>0){
+							grade2[x-count-1][y-count-1]=166;
+							grade2[x-1][y-1]='.';
+							grade[x-1][y-1]='.';
+							grade[x-count-1][y-count-1]='B';
+						}else{
+							SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+							cout << "Movimento invalido!"<<endl;
+							SetConsoleTextAttribute(hConsole, saved_colors);
+						}
+					}
+				}	
+			}
+		}
+    	
+    	for (int i=0; i<8; i++){
+			cout <<ord<<" ";
+			ord++;
+        	for (int j=0; j<8; j++){
+        		if (grade2[j][i]>100){
+        			SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+        			cout<<grade[j][i]<<" ";
+        			SetConsoleTextAttribute(hConsole, saved_colors);
+				}else{
+					cout<<grade[j][i]<<" ";
+				}
+        	}
+        	cout << endl;
+        	if (i==7){
+        		cout<< "  1 2 3 4 5 6 7 8"<<endl;
+			}
+        }
+    }	
+}
